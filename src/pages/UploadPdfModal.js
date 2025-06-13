@@ -89,10 +89,10 @@ const UploadPdfModal = ({ visible, onClose, onUpload }) => {
       </DialogContent>
 
       <DialogActions>
-        <Button onClick={onClose} color="inherit">
+        <Button onClick={onClose} style = {{borderRadius:"15px",border:"1px solid"}}color="inherit">
           Cancel
         </Button>
-        <Button onClick={handleSubmit} variant="contained">
+        <Button onClick={handleSubmit}   style={{backgroundColor:"#6c5ce7",color:"white",borderRadius:"15px"}}>
           Submit
         </Button>
       </DialogActions>

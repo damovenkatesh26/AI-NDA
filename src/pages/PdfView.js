@@ -65,7 +65,7 @@ const PdfViewer = ({ file }) => {
   return (
     <Box
       sx={{
-        height: "100vh",
+        height: "90vh",
         display: "flex",
         flexDirection: "column",
         bgcolor: "#f4f4f4",
