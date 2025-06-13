@@ -7,7 +7,6 @@ import {
   Paper,
   Box,
   Snackbar,
-  Alert,
 } from "@mui/material";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 import { useDropzone } from "react-dropzone";

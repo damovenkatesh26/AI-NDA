@@ -7,6 +7,8 @@ import {
   ListItem,
   ListItemText,
   IconButton,
+  Dialog,
+  DialogTitle,
 } from "@mui/material";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 import MenuOpenIcon from "@mui/icons-material/MenuOpen";
@@ -32,6 +34,9 @@ const Home = () => {
   ]);
   const [showModal, setShowModal] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+
+
+
 
   const handlePdfSelect = (url) => {
     setPdfFile(url);
@@ -123,7 +128,7 @@ const Home = () => {
                     "&:hover": {
                       backgroundColor: "#d5d0f5",
                     },
-                    cursor:"pointer"
+                    cursor: "pointer"
                   }}
                 >
                   <img
@@ -131,18 +136,18 @@ const Home = () => {
                     alt="PDF"
                     style={{ width: 24, height: 24, marginRight: 8 }}
                   />
-                 <ListItemText
-  primary={
-    <Typography
-      variant="body2"
-      noWrap
-      title={pdf.name}
-      sx={{ maxWidth: "200px" }}
-    >
-      {pdf.name}
-    </Typography>
-  }
-/>
+                  <ListItemText
+                    primary={
+                      <Typography
+                        variant="body2"
+                        noWrap
+                        title={pdf.name}
+                        sx={{ maxWidth: "200px" }}
+                      >
+                        {pdf.name}
+                      </Typography>
+                    }
+                  />
 
                 </ListItem>
               ))}
@@ -177,7 +182,7 @@ const Home = () => {
             overflowY: "auto",
           }}
         >
-          <PdfViewer file={pdfFile} />
+          {pdfList.length >0 ?<PdfViewer file={pdfFile} />: <UploadPdfModal onClose={false}    onUpload={handlePdfUpload}  />}
         </Box>
 
         {/* HTML Preview */}
@@ -194,11 +199,17 @@ const Home = () => {
       </Box>
 
       {/* Upload Modal */}
-      <UploadPdfModal
-        visible={showModal}
-        onClose={() => setShowModal(false)}
-        onUpload={handlePdfUpload}
-      />
+<Dialog open={showModal} onClose={() => setShowModal(false)} maxWidth="md" fullWidth>
+  <DialogTitle>Upload PDF</DialogTitle>
+  <UploadPdfModal
+    onUpload={handlePdfUpload}
+    onClose={() => setShowModal(false)}
+    visible ={true}
+  />
+</Dialog>
+
+
+
     </Box>
   );
 };

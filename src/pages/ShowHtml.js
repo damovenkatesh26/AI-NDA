@@ -1,5 +1,4 @@
-// src/pages/ShowHtml.jsx
-import React, { useState, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Typography,
   Box,
@@ -7,69 +6,56 @@ import {
   Paper,
   Autocomplete,
   TextField,
+  CircularProgress,
 } from "@mui/material";
-
-const rawHTML = `
-  <!DOCTYPE  html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/><title>NON-DISCLOSURE AGREEMENT</title><meta name="author" content="Diane Kelly"/><style type="text/css"> * {margin:0; padding:0; text-indent:0; }
- h1 { color: black; font-family:Calibri, sans-serif; font-style: normal; font-weight: bold; text-decoration: none; font-size: 12pt; }
- .p, p { color: black; font-family:Calibri, sans-serif; font-style: normal; font-weight: normal; text-decoration: none; font-size: 11pt; margin:0pt; }
- h2 { color: black; font-family:Calibri, sans-serif; font-style: normal; font-weight: bold; text-decoration: none; font-size: 11pt; }
- .s1 { color: black; font-family:"Times New Roman", serif; font-style: normal; font-weight: normal; text-decoration: underline; font-size: 11pt; }
- .s4 { color: black; font-family:Calibri, sans-serif; font-style: normal; font-weight: normal; text-decoration: none; font-size: 7pt; vertical-align: 3pt; }
- .s5 { color: black; font-family:Calibri, sans-serif; font-style: normal; font-weight: normal; text-decoration: none; font-size: 6.5pt; vertical-align: 5pt; }
- .s6 { color: black; font-family:Calibri, sans-serif; font-style: normal; font-weight: normal; text-decoration: none; font-size: 8.5pt; }
- .a { color: #4D4F48; font-family:Calibri, sans-serif; font-style: normal; font-weight: normal; text-decoration: underline; font-size: 8.5pt; }
- .s8 { color: black; font-family:Calibri, sans-serif; font-style: normal; font-weight: normal; text-decoration: none; font-size: 8.5pt; }
- .s9 { color: black; font-family:Calibri, sans-serif; font-style: normal; font-weight: bold; text-decoration: none; font-size: 11pt; }
- .s10 { color: black; font-family:Calibri, sans-serif; font-style: normal; font-weight: bold; text-decoration: none; font-size: 11pt; }
- .s11 { color: black; font-family:Calibri, sans-serif; font-style: normal; font-weight: normal; text-decoration: none; font-size: 11pt; }
- .s13 { color: black; font-family:Calibri, sans-serif; font-style: italic; font-weight: normal; text-decoration: none; font-size: 10pt; }
- li {display: block; }
- #l1 {padding-left: 0pt;counter-reset: c1 1; }
- #l1> li>*:first-child:before {counter-increment: c1; content: counter(c1, decimal)". "; color: black; font-family:Calibri, sans-serif; font-style: normal; font-weight: normal; text-decoration: none; font-size: 11pt; }
- #l1> li:first-child>*:first-child:before {counter-increment: c1 0;  }
- #l2 {padding-left: 0pt;counter-reset: c2 1; }
- #l2> li>*:first-child:before {counter-increment: c2; content: "("counter(c2, lower-latin)") "; color: black; font-family:Calibri, sans-serif; font-style: normal; font-weight: normal; text-decoration: none; font-size: 11pt; }
- #l2> li:first-child>*:first-child:before {counter-increment: c2 0;  }
- #l3 {padding-left: 0pt;counter-reset: d1 1; }
- #l3> li>*:first-child:before {counter-increment: d1; content: "("counter(d1, lower-roman)") "; color: black; font-family:Calibri, sans-serif; font-style: normal; font-weight: normal; text-decoration: none; font-size: 11pt; }
- #l3> li:first-child>*:first-child:before {counter-increment: d1 0;  }
- table, tbody {vertical-align: top; overflow: visible; }
-</style></head><body><p style="padding-left: 374pt;text-indent: 0pt;text-align: left;"><span><table border="0" cellspacing="0" cellpadding="0"><tr><td><img width="132" height="91" src="data:image/jpg;base64,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"/></td></tr></table></span></p><p style="padding-top: 2pt;text-indent: 0pt;text-align: left;"><br/></p><p style="text-indent: 0pt;text-align: left;"/><h1 style="padding-left: 6pt;text-indent: 0pt;text-align: left;">MUTUAL CONFIDENTIALITY AND NON-DISCLOSURE AGREEMENT - VENDORS</h1><p style="padding-top: 4pt;text-indent: 0pt;text-align: left;"><br/></p><p style="padding-left: 6pt;text-indent: 0pt;line-height: 150%;text-align: left;">This Confidentiality and Non-Disclosure Agreement (the “<b>Agreement</b>”) is made as of the <span class="s1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>[<i>nth</i>] day of <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </u>[<i>Month, Year</i>] between <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </u> [<i>Company Name</i>] (<b>“Company”), </b>having offices at <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u></p><p style="text-indent: 0pt;text-align: left;"><br/></p><p style="padding-left: 6pt;text-indent: 0pt;line-height: 1pt;text-align: left;"/><p style="padding-top: 7pt;padding-left: 6pt;text-indent: 0pt;line-height: 150%;text-align: left;">[<i>Address, Town/City, Province/State, Post Code</i>], and Queen’s University (“<b>Queen’s</b>”), having its principal business address at 99 University Avenue, Kingston, Ontario K7L 3N6.</p><p style="padding-top: 13pt;padding-left: 6pt;text-indent: 0pt;text-align: left;"><b>WHEREAS </b>Queen’s and <span class="s1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>[<i>Company</i>] wish to disclose to one another certain information that may be personal, proprietary and confidential in discussions and negotiations regarding a potential business relationship for the provision certain goods and services (the “Purpose”); and</p><p style="padding-top: 6pt;padding-left: 6pt;text-indent: 0pt;text-align: left;">WHEREAS the personal, proprietary and confidential information may include personal data protected under FIPPA<span class="s4">1</span> and certain specifications, designs, plans, drawings, software, data, prototypes, or other business and/or technical information (including without limitation, planning, performance, product, sales, marketing, contractual, employee, supplier and customer information) relating to or in connection with the Purpose, (whether expressed in writing, electronically, digitally verbally or otherwise) and includes the fact that the discussions or negotiations are or will be underway (“Confidential Information”) ;</p><h2 style="padding-top: 12pt;padding-left: 6pt;text-indent: 0pt;text-align: justify;">NOW THEREFORE, <span class="p">in consideration of the mutual covenants contained herein, and for other good and valuable consideration, the receipt and sufficiency of which is hereby acknowledged, the parties agree as follows:</span></h2><ol id="l1"><li data-list-text="1."><p style="padding-top: 6pt;padding-left: 42pt;text-indent: -36pt;text-align: justify;">All Confidential Information provided by a disclosing party (&quot;<b>Disclosing Party</b>&quot;) hereunder to the other party (&quot;<b>Recipient</b>&quot;) shall be kept confidential by the Recipient. Each of the parties agrees:</p><ol id="l2"><li data-list-text="(a)"><p style="padding-top: 6pt;padding-left: 69pt;text-indent: -27pt;text-align: left;">to use Confidential Information only for the mutual benefit of the parties and in furtherance of the Purpose, and to reproduce such Confidential Information only to the extent necessary for such Purpose;</p></li><li data-list-text="(b)"><p style="padding-top: 5pt;padding-left: 69pt;text-indent: -27pt;text-align: left;">to reveal the Confidential Information only to their respective employees, advisors, consultants and subcontractors who: (i) need to know the Confidential Information for the Purpose, (ii) are informed of the confidential nature of the Confidential Information, and (iii) agree to be bound by the terms of this Agreement directly or have a confidentiality agreement in place with the Recipient containing obligations to protect the Confidential Information which are substantially similar to the obligations contained herein; and</p><p style="text-indent: 0pt;text-align: left;"><br/></p><p style="padding-left: 6pt;text-indent: 0pt;line-height: 1pt;text-align: left;"/><p class="s5" style="padding-top: 2pt;padding-left: 6pt;text-indent: 0pt;text-align: left;">1 <a href="http://www.e-laws.gov.on.ca/navigation?file=home&amp;lang=en" class="s8" target="_blank">From 10 June 2006 Ontario universities, including Queen’s University, are covered by the </a><span style=" color: #4D4F48; font-family:Calibri, sans-serif; font-style: normal; font-weight: normal; text-decoration: underline; font-size: 8.5pt;">Freedom of Information and Protection of</span><a href="http://www.e-laws.gov.on.ca/navigation?file=home&amp;lang=en" style=" color: #4D4F48; font-family:Calibri, sans-serif; font-style: normal; font-weight: normal; text-decoration: none; font-size: 8.5pt;" target="_blank"> </a><a href="http://www.e-laws.gov.on.ca/navigation?file=home&amp;lang=en" class="a" target="_blank">Privacy Act </a><span class="s6">. Please see the “Act” for definitions</span></p></li><li data-list-text="(c)"><p style="padding-top: 1pt;padding-left: 69pt;text-indent: -27pt;text-align: left;">to protect such Confidential Information disclosed to it with at least the same degree of care as it normally exercises to protect its own proprietary information of a similar nature, but in no event less than reasonable care.</p><p style="text-indent: 0pt;text-align: left;"><br/></p></li></ol></li><li data-list-text="2."><p style="padding-left: 41pt;text-indent: -35pt;text-align: left;">These restrictions on the use or disclosure of Confidential Information shall not apply to any Confidential Information: (i) which is shown by competent evidence to be already known to or is independently developed by the Recipient without use of or reference to any Confidential Information and without violation of any confidentiality restrictions contained herein; (ii) which is lawfully received free of restriction from a third party having a right to furnish such Confidential Information; (iii) after it has become generally available to the public without breach of this Agreement by the Recipient; (iv) which the Disclosing Party agrees in writing is free of such restrictions; or (v) which is required by law to be disclosed by the Recipient, provided that the Recipient gives the Disclosing Party prior written notice.</p><p style="text-indent: 0pt;text-align: left;"><br/></p></li><li data-list-text="3."><p style="padding-left: 42pt;text-indent: -36pt;text-align: left;">Confidential Information disclosed hereunder shall at all times remain, as between the parties, the property of the Disclosing Party. No license to a party or any other intellectual property right is either granted or implied by the conveying of Confidential Information to such party.</p></li><li data-list-text="4."><p style="padding-top: 13pt;padding-left: 42pt;text-indent: -36pt;text-align: left;">All Confidential Information made available hereunder by one party to the other in any form whatsoever, including copies thereof, shall be returned to the Disclosing Party, or where the Confidential Information is in an electronic format, deleted in such manner that the information cannot be recovered or retrieved, upon the first to occur of (a) completion of the Purpose, or</p><p style="padding-left: 42pt;text-indent: 0pt;text-align: left;">(b) request by the Disclosing Party. Where the Confidential Information is in an electronic format, the Recipient shall delete such information in such manner that the information cannot be recovered and, upon the Disclosing Party’s request, provide it with a written confirmation of a senior officer that all Confidential Information in the Recipient’s possession has been destroyed.</p><p style="text-indent: 0pt;text-align: left;"><br/></p></li><li data-list-text="5."><p style="padding-left: 42pt;text-indent: -36pt;text-align: left;">Neither this Agreement nor the disclosure or receipt of Confidential Information shall constitute or imply any promise or intention to make any purchase of products or services by either party or any commitment by either party with respect to the present or future marketing of any product or service, or restrict either party from acquiring or selling products or services similar to or competitive with the products or services provided by the other party.</p><p style="text-indent: 0pt;text-align: left;"><br/></p></li><li data-list-text="6."><p style="padding-left: 41pt;text-indent: -35pt;text-align: justify;"><u> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </u>[<i>Company</i>] acknowledges that Queen’s is bound by the provisions of the <i>Freedom of Information and Protection of Privacy Act</i>, R.S.O. 1990, c. F.31, as amended (&quot;<b>FIPPA</b>&quot;) and Personal heath Information Protection Act (PHIPA).</p><p style="padding-left: 41pt;text-indent: 0pt;text-align: justify;"><u> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </u>[<i>Company</i>] shall use commercially reasonable efforts to respect the letter and spirit of FIPPA, as may from time to time be directed by Queen’s.</p><p style="padding-left: 41pt;text-indent: 0pt;text-align: justify;">Without limiting the foregoing and for greater certainty <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </u> [<i>Company</i>]:</p><p style="text-indent: 0pt;text-align: left;"><br/></p><ol id="l3"><li data-list-text="(i)"><p style="padding-left: 78pt;text-indent: -36pt;text-align: left;">shall, when requested by Queen’s, use commercially reasonable efforts to maintain, and where necessary, implement the necessary security mechanisms and procedures to ensure against the direct or indirect unauthorized access, use, disclosure, alteration, loss or destruction of any Personal and/or Confidential Information provided by Queen’s or otherwise obtained by <span class="s1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>[<i>Company</i>];</p></li><li data-list-text="(ii)"><p style="padding-top: 1pt;padding-left: 78pt;text-indent: -36pt;text-align: left;">shall, when requested by Queen’s, use commercially reasonable efforts to co-operate with the fulfillment of Queen’s disclosure duties under FIPPA; and</p><p style="text-indent: 0pt;text-align: left;"><br/></p></li><li data-list-text="(iii)"><p style="padding-left: 78pt;text-indent: -36pt;text-align: left;">shall upon Queen’s request return or destroy all Personal and/or Confidential Information, including copies existing in any format, to Queen’s, or, where the Personal and/or Confidential Information is in an electronic format, delete such information in such manner that the information cannot be recovered and, where appropriate, provide Queen’s with a written confirmation of a senior officer that all Personal and/or Confidential Information in <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </u>[<i>Company</i>]’s possession has been destroyed.</p></li></ol><p style="text-indent: 0pt;text-align: left;"><br/></p><p style="padding-left: 41pt;text-indent: 0pt;text-align: left;">For the purposes of this Section, &quot;<b>Personal Information</b>&quot; has the same definition as in subsection 2(1) of FIPPA, and includes without limitation, an individual&#39;s name, address, age, date of birth, sex, and religion, whether recorded in printed form, on film, by electronic means or otherwise. Both <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </u>[<i>Company</i>] and Queen’s acknowledge that in the event of any conflict between this Section and the balance of this Agreement, this Section shall prevail.</p><p style="text-indent: 0pt;text-align: left;"><br/></p></li><li data-list-text="7."><p style="padding-left: 42pt;text-indent: -36pt;text-align: left;">Neither party may use the name or logo of the other in connection with any advertising or publicity materials or activities, or make any other representations to a third party regarding its dealings with the other, without obtaining the prior written consent of the other party.</p><p style="text-indent: 0pt;text-align: left;"><br/></p></li><li data-list-text="8."><p style="padding-left: 42pt;text-indent: -36pt;text-align: left;">This Agreement shall become effective as of the date it is executed or when Confidential Information of one party is first made available to the other party, whichever is first in time.</p></li><li data-list-text="9."><p style="padding-top: 13pt;padding-left: 42pt;text-indent: -36pt;text-align: left;">In the event of a breach, or threatened breach, of any of the provisions of this Agreement, the parties agree that the harm suffered by the non-breaching party would not be compensable by monetary damages alone and, accordingly, that the non-breaching party shall, in addition to other available legal or equitable remedies, be entitled to seek an injunction against such breach or threatened breach.</p><p style="text-indent: 0pt;text-align: left;"><br/></p></li><li data-list-text="10."><p style="padding-left: 42pt;text-indent: -36pt;text-align: left;">This Agreement constitutes the entire understanding between the parties hereto as to the Confidential Information and merges all prior discussions between them relating thereto. No amendment or modification of this Agreement shall be valid or binding on the parties unless made in writing and signed on behalf of each of the parties by their respective duly authorized officers or representatives. None of the provisions of this Agreement shall be deemed to have been waived by any act or acquiescence of a party hereto, but only by an instrument in writing signed by the duly authorized officer or representative of the waiving party.</p><p style="text-indent: 0pt;text-align: left;"><br/></p></li><li data-list-text="11."><p style="padding-left: 42pt;text-indent: -36pt;text-align: left;">In the situation of a dispute this Agreement shall be governed by and interpreted in accordance with the laws in effect in the Province of Ontario.</p><p style="text-indent: 0pt;text-align: left;"><br/></p></li><li data-list-text="12."><p style="padding-left: 42pt;text-indent: -36pt;text-align: justify;">The obligations undertaken pursuant to this Confidentiality and Non-Disclosure Agreement shall be unlimited as to time and will not cease even upon fulfillment or termination of the original purpose for which the Personal and/or Confidential Information was disclosed.</p></li><li data-list-text="13."><p style="padding-top: 1pt;padding-left: 42pt;text-indent: -36pt;text-align: left;"><u> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </u>[<i>Company</i>] agrees that the University may require confirmation and proof of the steps taken to comply with the requirements of this agreement, which would include proof of destruction or deletion of electronic records as required and immediate return all personal and/or confidential information received from the University or collected on its behalf.</p></li></ol><p style="padding-top: 13pt;text-indent: 0pt;text-align: left;"><br/></p><p style="padding-left: 6pt;text-indent: 0pt;text-align: left;">Acknowledged and agreed as of the date first written above:</p><p style="text-indent: 0pt;text-align: left;"><br/></p><table style="border-collapse:collapse;margin-left:6.464pt" cellspacing="0"><tr style="height:33pt"><td style="width:180pt"><p class="s9" style="text-indent: 0pt;line-height: 11pt;text-align: left;">Queen’s University</p></td><td style="width:41pt"><p style="text-indent: 0pt;text-align: left;"><br/></p></td><td style="width:180pt"><p style="text-indent: 0pt;line-height: 11pt;text-align: left;"><span class="s10" style=" background-color: #FF0;">Company</span></p></td></tr><tr style="height:71pt"><td style="width:180pt;border-bottom-style:solid;border-bottom-width:1pt"><p style="padding-top: 5pt;text-indent: 0pt;text-align: left;"><br/></p><p class="s11" style="padding-right: 120pt;text-indent: 0pt;text-align: left;">By<u> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </u> (Signature)</p></td><td style="width:41pt"><p style="text-indent: 0pt;text-align: left;"><br/></p></td><td style="width:180pt;border-bottom-style:solid;border-bottom-width:1pt"><p style="padding-top: 5pt;text-indent: 0pt;text-align: left;"><br/></p><p class="s11" style="padding-right: 120pt;text-indent: 0pt;text-align: left;">By<u> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </u> (Signature)</p></td></tr><tr style="height:40pt"><td style="width:180pt;border-top-style:solid;border-top-width:1pt;border-bottom-style:solid;border-bottom-width:1pt"><p class="s11" style="padding-top: 1pt;text-indent: 0pt;text-align: left;">(Name)</p></td><td style="width:41pt"><p style="text-indent: 0pt;text-align: left;"><br/></p></td><td style="width:180pt;border-top-style:solid;border-top-width:1pt;border-bottom-style:solid;border-bottom-width:1pt"><p class="s11" style="padding-top: 1pt;text-indent: 0pt;text-align: left;">(Name)</p></td></tr><tr style="height:15pt"><td style="width:180pt;border-top-style:solid;border-top-width:1pt"><p class="s11" style="padding-top: 1pt;text-indent: 0pt;line-height: 12pt;text-align: left;">(Title)</p></td><td style="width:41pt"><p style="text-indent: 0pt;text-align: left;"><br/></p></td><td style="width:180pt;border-top-style:solid;border-top-width:1pt"><p class="s11" style="padding-top: 1pt;text-indent: 0pt;line-height: 12pt;text-align: left;">(Title)</p></td></tr></table><p style="padding-top: 1pt;text-indent: 0pt;text-align: left;"><br/></p><p class="s13" style="padding-left: 222pt;text-indent: 0pt;text-align: left;">This person has the authority to bind the organization</p></body></html>
-
-`;
-
-const baseKeywords = [
-  "Invoice", "Date", "Customer", "Widget A", "Widget B",
-  "Quantity", "Price", "Total", "John Doe", "2025-06-13"
-];
+import axios from "axios";
 
 const ShowHtml = () => {
   const [searchText, setSearchText] = useState("");
-  const [filteredOptions, setFilteredOptions] = useState(baseKeywords);
-  const contentRef = useRef(null);
+  const [keywords, setKeywords] = useState([]);
+  const [filteredOptions, setFilteredOptions] = useState([]);
+  const [loadingKeywords, setLoadingKeywords] = useState(false);
+  const [loadingAnswer, setLoadingAnswer] = useState(false);
+  const [answerHTML, setAnswerHTML] = useState("<p>No data available</p>");
 
-  const highlightHTML = (html, keyword) => {
-    if (!keyword) return html;
-    const escapedKeyword = keyword.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&");
-    const regex = new RegExp(`(${escapedKeyword})`, "gi");
-    return html.replace(regex, `<mark>$1</mark>`);
-  };
+  useEffect(() => {
+    const fetchKeywords = async () => {
+      setLoadingKeywords(true);
+      try {
+        const res = await axios.get("/recommendations");
+        const suggestions = res.data?.recommended_questions || [];
+        setKeywords(suggestions);
+        setFilteredOptions(suggestions);
+      } catch (err) {
+        console.error("Error loading keywords", err);
+      } finally {
+        setLoadingKeywords(false);
+      }
+    };
 
-  const highlightedHTML = highlightHTML(rawHTML, searchText);
+    fetchKeywords();
+  }, []);
 
-  const handleSearch = () => {
-    // Scroll to first highlighted element
-    setTimeout(() => {
-      const mark = contentRef.current?.querySelector("mark");
-      if (mark) mark.scrollIntoView({ behavior: "smooth", block: "center" });
-    }, 100);
+  const handleSearch = async () => {
+    if (!searchText?.trim()) return;
+
+    setLoadingAnswer(true);
+    try {
+      const res = await axios.post("/ask_question", {
+        question: searchText.trim(),
+      });
+      setAnswerHTML(res.data?.answer_html || "<p>No answer found.</p>");
+    } catch (err) {
+      console.error("Failed to fetch answer", err);
+      setAnswerHTML("<p style='color: red;'>Failed to load answer.</p>");
+    } finally {
+      setLoadingAnswer(false);
+    }
   };
 
   const handleInputChange = (event, value) => {
     setSearchText(value);
-    const filtered = baseKeywords.filter((option) =>
+    const filtered = keywords.filter((option) =>
       option.toLowerCase().includes(value.toLowerCase())
     );
     setFilteredOptions(filtered);
@@ -84,13 +70,25 @@ const ShowHtml = () => {
           options={filteredOptions}
           inputValue={searchText}
           onInputChange={handleInputChange}
+          loading={loadingKeywords}
           renderInput={(params) => (
             <TextField
               {...params}
-              label="Search Keyword"
+              label="Ask a question or search"
               size="small"
               variant="outlined"
               sx={{ borderRadius: 4, "& fieldset": { borderRadius: 3 } }}
+              InputProps={{
+                ...params.InputProps,
+                endAdornment: (
+                  <>
+                    {loadingKeywords && (
+                      <CircularProgress color="inherit" size={18} />
+                    )}
+                    {params.InputProps.endAdornment}
+                  </>
+                ),
+              }}
             />
           )}
           sx={{ width: 400 }}
@@ -98,30 +96,39 @@ const ShowHtml = () => {
         <Button
           variant="contained"
           onClick={handleSearch}
-          sx={{ borderRadius: 3, textTransform: "none", backgroundColor:"#6c5ce7" }}
+          sx={{
+            borderRadius: 3,
+            textTransform: "none",
+            backgroundColor: "#6c5ce7",
+          }}
         >
           Search
         </Button>
       </Box>
 
-      {/* HTML Preview */}
+      {/* Answer Section */}
       <Typography variant="h6" gutterBottom>
-        HTML Preview
+        Answer from Document
       </Typography>
       <Paper
-        elevation={3}
+        elevation={2}
         sx={{
           p: 2,
-          maxHeight: "69vh",
+          height: "68vh",
           overflowY: "auto",
           border: "1px solid #ccc",
         }}
-        ref={contentRef}
       >
-        <div
-          dangerouslySetInnerHTML={{ __html: highlightedHTML }}
-          style={{ fontFamily: "Arial, sans-serif", lineHeight: "1.6" }}
-        />
+        {loadingAnswer ? (
+          <Typography variant="body2" color="textSecondary">
+            Loading answer...
+          </Typography>
+        ) : (
+          <div
+            dangerouslySetInnerHTML={{ __html: answerHTML }}
+            style={{ fontFamily: "Georgia, serif", lineHeight: "1.6" }}
+          />
+        )}
       </Paper>
     </Box>
   );
