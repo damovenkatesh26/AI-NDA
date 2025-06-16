@@ -9,8 +9,10 @@ import {
   CircularProgress,
 } from "@mui/material";
 import axios from "axios";
+import Popper from "@mui/material/Popper";
+import VoiceInput from "../Components/VoiceText";
 
-const ShowHtml = () => {
+const ShowHtml = ({ pdfFile }) => {
   const [searchText, setSearchText] = useState("");
   const [keywords, setKeywords] = useState([]);
   const [filteredOptions, setFilteredOptions] = useState([]);
@@ -19,35 +21,37 @@ const ShowHtml = () => {
   const [answerHTML, setAnswerHTML] = useState("<p>No data available</p>");
 
   useEffect(() => {
-    const fetchKeywords = async () => {
-      setLoadingKeywords(true);
-      try {
-        const res = await axios.get(process.env.REACT_APP_BASIC_URL+"/recommendations");
-        const suggestions = res.data?.recommended_questions || [];
-        setKeywords(suggestions);
-        setFilteredOptions(suggestions);
-      } catch (err) {
-        console.error("Error loading keywords", err);
-      } finally {
-        setLoadingKeywords(false);
-      }
-    };
-
+    setAnswerHTML("<p>No data available</p>");
+    setSearchText("");
     fetchKeywords();
-  }, []);
+  }, [pdfFile]);
+
+  const fetchKeywords = async () => {
+    setLoadingKeywords(true);
+    try {
+      const res = await axios.get(
+        `${process.env.REACT_APP_BASIC_URL}/recommendations`
+      );
+      const suggestions = res.data?.recommended_questions || [];
+      setKeywords(suggestions);
+      setFilteredOptions(suggestions);
+    } catch (err) {
+      console.error("Error loading keywords", err);
+    } finally {
+      setLoadingKeywords(false);
+    }
+  };
 
   const handleSearch = async () => {
     if (!searchText?.trim()) return;
-
     setLoadingAnswer(true);
     try {
-      const res = await axios.post(process.env.REACT_APP_BASIC_URL+"/ask_question", {
-        question: searchText.trim(),
-      });
-     const htmlWithBreaks =  res.data?.answer_html.replace(/\n/g, "<br />");
- 
- 
-      setAnswerHTML(htmlWithBreaks|| "<p>No answer found.</p>");
+      const res = await axios.post(
+        `${process.env.REACT_APP_BASIC_URL}/ask_question`,
+        { question: searchText.trim() }
+      );
+      const htmlWithBreaks = res.data?.answer_html?.replace(/\n/g, "<br />");
+      setAnswerHTML(htmlWithBreaks || "<p>No answer found.</p>");
     } catch (err) {
       console.error("Failed to fetch answer", err);
       setAnswerHTML("<p style='color: red;'>Failed to load answer.</p>");
@@ -64,9 +68,14 @@ const ShowHtml = () => {
     setFilteredOptions(filtered);
   };
 
+  // Widen the autocomplete dropdown
+  const CustomPopper = (props) => {
+    return <Popper {...props} style={{ width: 600, zIndex: 1300 }} />;
+  };
+
   return (
     <Box p={2}>
-      {/* Autocomplete Search */}
+      {/* Autocomplete with Voice and Search */}
       <Box mb={2} display="flex" gap={1} alignItems="center">
         <Autocomplete
           freeSolo
@@ -74,6 +83,7 @@ const ShowHtml = () => {
           inputValue={searchText}
           onInputChange={handleInputChange}
           loading={loadingKeywords}
+          PopperComponent={CustomPopper}
           renderInput={(params) => (
             <TextField
               {...params}
@@ -94,8 +104,9 @@ const ShowHtml = () => {
               }}
             />
           )}
-          sx={{ width: 400 }}
+          sx={{ width: 600 }}
         />
+        <VoiceInput setSearchText={setSearchText} />
         <Button
           variant="contained"
           onClick={handleSearch}
@@ -109,7 +120,7 @@ const ShowHtml = () => {
         </Button>
       </Box>
 
-      {/* Answer Section */}
+      {/* Answer Output */}
       <Typography variant="h6" gutterBottom>
         Answer from Document
       </Typography>
