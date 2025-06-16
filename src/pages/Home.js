@@ -15,23 +15,17 @@ import MenuOpenIcon from "@mui/icons-material/MenuOpen";
 import MenuIcon from "@mui/icons-material/Menu";
 import PdfViewer from "./PdfView";
 import ShowHtml from "./ShowHtml";
-import confidentiality_and_non_disclosure_agreement from "../img/confidentiality_and_non-disclosure-agreement.pdf";
-import movie_film_nda from "../img/Movie-Film-Non-Disclosure-Agreement.pdf";
-import vendor_nda from "../img/QU_CNDA-Mutual-Vendors_2011-05-12.pdf";
-import textile_nda from "../img/Textile-Exchange-NDA-CFMB-2022-Fillable.pdf";
-import tutor_perini_nda from "../img/tutor-perini-view-only-cui-non-disclosure-agreement-template-v5.pdf";
+// import confidentiality_and_non_disclosure_agreement from "../img/confidentiality_and_non-disclosure-agreement.pdf";
+// import movie_film_nda from "../img/Movie-Film-Non-Disclosure-Agreement.pdf";
+// import vendor_nda from "../img/QU_CNDA-Mutual-Vendors_2011-05-12.pdf";
+// import textile_nda from "../img/Textile-Exchange-NDA-CFMB-2022-Fillable.pdf";
+// import tutor_perini_nda from "../img/tutor-perini-view-only-cui-non-disclosure-agreement-template-v5.pdf";
 import PDFIcon from "../img/pdf_icon.png";
 import UploadPdfModal from "./UploadPdfModal";
 
 const Home = () => {
-  const [pdfFile, setPdfFile] = useState(movie_film_nda);
-  const [pdfList, setPdfList] = useState([
-    { name: "Confidentiality NDA", url: confidentiality_and_non_disclosure_agreement },
-    { name: "Movie NDA", url: movie_film_nda },
-    { name: "Vendor NDA", url: vendor_nda },
-    { name: "Textile NDA", url: textile_nda },
-    { name: "Tutor NDA", url: tutor_perini_nda },
-  ]);
+  const [pdfFile, setPdfFile] = useState("");
+  const [pdfList, setPdfList] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
@@ -115,7 +109,7 @@ const Home = () => {
               {pdfList.map((pdf, index) => (
                 <ListItem
                   button
-                  
+
                   key={`${pdf.name}-${index}`}
                   onClick={() => handlePdfSelect(pdf.url)}
                   sx={{
@@ -182,7 +176,15 @@ const Home = () => {
             overflowY: "auto",
           }}
         >
-          {pdfList.length >0 ?<PdfViewer file={pdfFile} />: <UploadPdfModal onClose={false}    onUpload={handlePdfUpload}  />}
+          {pdfList.length > 0 ? (
+            <PdfViewer file={pdfFile} />
+          ) : (
+            <UploadPdfModal
+              onClose={() => setShowModal(false)} // Pass a real function here
+              onUpload={handlePdfUpload}
+            />
+          )}
+
         </Box>
 
         {/* HTML Preview */}
@@ -199,14 +201,14 @@ const Home = () => {
       </Box>
 
       {/* Upload Modal */}
-<Dialog open={showModal} onClose={() => setShowModal(false)} maxWidth="md" fullWidth>
-  <DialogTitle>Upload PDF</DialogTitle>
-  <UploadPdfModal
-    onUpload={handlePdfUpload}
-    onClose={() => setShowModal(false)}
-    visible ={true}
-  />
-</Dialog>
+      <Dialog open={showModal} onClose={() => setShowModal(false)} maxWidth="md" fullWidth>
+        <DialogTitle>Upload PDF</DialogTitle>
+        <UploadPdfModal
+          onUpload={handlePdfUpload}
+          onClose={() => setShowModal(false)}
+          visible={true}
+        />
+      </Dialog>
 
 
 

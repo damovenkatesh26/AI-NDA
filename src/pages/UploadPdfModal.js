@@ -6,11 +6,12 @@ import {
   Typography,
   Paper,
   Box,
-  Snackbar,
+  CircularProgress,
 } from "@mui/material";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 import { useDropzone } from "react-dropzone";
 import axios from "axios";
+import Snackbars from "../Components/Snackbar";
 
 const UploadPdfModal = ({ visible, onClose, onUpload }) => {
   const [file, setFile] = useState(null);
@@ -18,8 +19,11 @@ const UploadPdfModal = ({ visible, onClose, onUpload }) => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+  const [loading, setLoading] = useState(false); // 🔁 Loader state
 
-  const handleSnackbarClose = () => setSnackbarOpen(false);
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
+  };
 
   const handleUploadResult = (message, severity = "success") => {
     setSnackbarMessage(message);
@@ -53,24 +57,33 @@ const UploadPdfModal = ({ visible, onClose, onUpload }) => {
     formData.append("file", file);
 
     try {
-      const response = await axios.post("/upload", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      setLoading(true); // 🟡 Start loading
+
+      const response = await axios.post(
+        `${process.env.REACT_APP_BASIC_URL}/upload_file`,
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
 
       if (response.status === 200) {
-        // Assuming the response returns a file URL or ID
         const uploadedUrl = response.data?.url || URL.createObjectURL(file);
-
         onUpload({ name: file.name, url: uploadedUrl });
         handleUploadResult("File uploaded successfully!", "success");
         setFile(null);
         setError("");
-        onClose();
+
+        setTimeout(() => {
+          onClose();
+        }, 1500);
       }
     } catch (error) {
       const message =
         error.response?.data?.detail || "Failed to upload. Try again.";
       handleUploadResult(message, "error");
+    } finally {
+      setLoading(false); 
     }
   };
 
@@ -120,29 +133,35 @@ const UploadPdfModal = ({ visible, onClose, onUpload }) => {
             onClick={onClose}
             style={{ borderRadius: "15px", border: "1px solid" }}
             color="inherit"
+            disabled={loading}
           >
             Cancel
           </Button>
         )}
         <Button
           onClick={handleSubmit}
-          disabled={!file}
+          disabled={!file || loading}
           style={{
             backgroundColor: "#6c5ce7",
             color: "white",
             borderRadius: "15px",
+            minWidth: 120,
           }}
         >
-          Submit
+          {loading ? (
+            <CircularProgress size={20} color="inherit" />
+          ) : (
+            "Submit"
+          )}
         </Button>
       </DialogActions>
 
-       <Snackbar
-            open={snackbarOpen}
-            onClose={handleSnackbarClose}
-            message={snackbarMessage}
-            severity={snackbarSeverity}
-          />
+      <Snackbars
+        open={snackbarOpen}
+        onClose={handleSnackbarClose}
+        message={snackbarMessage}
+        severity={snackbarSeverity}
+      />
     </div>
   );
 };

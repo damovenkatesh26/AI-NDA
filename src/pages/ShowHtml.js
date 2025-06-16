@@ -22,7 +22,7 @@ const ShowHtml = () => {
     const fetchKeywords = async () => {
       setLoadingKeywords(true);
       try {
-        const res = await axios.get("/recommendations");
+        const res = await axios.get(process.env.REACT_APP_BASIC_URL+"/recommendations");
         const suggestions = res.data?.recommended_questions || [];
         setKeywords(suggestions);
         setFilteredOptions(suggestions);
@@ -41,10 +41,13 @@ const ShowHtml = () => {
 
     setLoadingAnswer(true);
     try {
-      const res = await axios.post("/ask_question", {
+      const res = await axios.post(process.env.REACT_APP_BASIC_URL+"/ask_question", {
         question: searchText.trim(),
       });
-      setAnswerHTML(res.data?.answer_html || "<p>No answer found.</p>");
+     const htmlWithBreaks =  res.data?.answer_html.replace(/\n/g, "<br />");
+ 
+ 
+      setAnswerHTML(htmlWithBreaks|| "<p>No answer found.</p>");
     } catch (err) {
       console.error("Failed to fetch answer", err);
       setAnswerHTML("<p style='color: red;'>Failed to load answer.</p>");
